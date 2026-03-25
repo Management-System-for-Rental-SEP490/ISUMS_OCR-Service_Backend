@@ -10,3 +10,4 @@ jobs:
     uses: Management-System-for-Rental-SEP490/.github/.github/workflows/deploy-python-service.yml@main
     with:
       service_name: ocr-service
+      service_discovery_arn: arn:aws:servicediscovery:ap-southeast-1:886350084162:service/srv-g5s57i76xgu4ltm5
