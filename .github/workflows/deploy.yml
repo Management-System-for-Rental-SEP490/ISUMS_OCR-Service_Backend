@@ -1,0 +1,12 @@
+name: Deploy
+on:
+  push:
+    branches: [ main ]
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  deploy:
+    uses: Management-System-for-Rental-SEP490/.github/.github/workflows/deploy-python-service.yml@main
+    with:
+      service_name: ocr-service
