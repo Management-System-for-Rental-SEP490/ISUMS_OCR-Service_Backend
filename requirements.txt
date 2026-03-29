@@ -1,7 +1,8 @@
 paddleocr==3.4.0
 paddlepaddle==3.3.0
-fastapi==0.135.2
+fastapi==0.115.2
 uvicorn==0.42.0
 pillow==12.1.1
 python-multipart==0.0.22
 numpy==1.26.4
+opencv-python==4.10.0.84
