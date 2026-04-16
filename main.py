@@ -1,3 +1,6 @@
+import os
+os.environ.setdefault("PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "True")
+
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from paddleocr import PaddleOCR
 from PIL import Image, ImageOps
@@ -19,9 +22,7 @@ app = FastAPI(title="Vietnam CCCD OCR Service")
 
 ocr = PaddleOCR(
     lang="en",
-    use_angle_cls=True,
-    use_gpu=False,
-    show_log=False
+    use_textline_orientation=True
 )
 
 COMMON_ISSUE_PLACE = "CỤC CẢNH SÁT QUẢN LÝ HÀNH CHÍNH VỀ TRẬT TỰ XÃ HỘI"
