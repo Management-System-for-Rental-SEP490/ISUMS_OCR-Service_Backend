@@ -1,13 +1,17 @@
 name: Deploy
+
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+
 permissions:
   id-token: write
   contents: read
+
 jobs:
   deploy:
     uses: Management-System-for-Rental-SEP490/.github/.github/workflows/deploy-python-service.yml@main
     with:
       service_name: ocr-service
-      service_discovery_arn: arn:aws:servicediscovery:ap-southeast-1:886350084162:service/srv-g5s57i76xgu4ltm5
+      ecr_keep_tagged: 5
