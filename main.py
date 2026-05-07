@@ -1114,7 +1114,6 @@ async def ocr_cccd_quick_check(image: UploadFile = File(...)):
     loop = asyncio.get_running_loop()
     try:
         async with _verify_lock:
-            global _ocr_executor
             if _ocr_executor is None:
                 raise HTTPException(status_code=503, detail="OCR pool not ready")
             t0 = _time.perf_counter()
@@ -1603,7 +1602,6 @@ async def ocr_cccd_verify(
     loop = asyncio.get_running_loop()
     try:
         async with _verify_lock:
-            global _ocr_executor
             if _ocr_executor is None:
                 raise HTTPException(status_code=503, detail="OCR pool not ready")
             front_task = loop.run_in_executor(
