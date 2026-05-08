@@ -2,7 +2,9 @@ FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True \
+    FLAGS_use_mkldnn=False
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.12 \
@@ -22,10 +24,9 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir --break-system-packages -r requirements.txt \
-    && python -c "from paddleocr import PaddleOCR; PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False, use_textline_orientation=False, device='cpu')"
+RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 
-COPY main.py .
+COPY main.py ocr_worker.py ./
 
 EXPOSE 9000
 
