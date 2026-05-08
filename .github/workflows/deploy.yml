@@ -18,4 +18,5 @@ jobs:
     uses: Management-System-for-Rental-SEP490/.github/.github/workflows/deploy-python-service.yml@main
     with:
       service_name: ocr-service
+      image_runner: ubuntu-latest
       ecr_keep_tagged: 5
