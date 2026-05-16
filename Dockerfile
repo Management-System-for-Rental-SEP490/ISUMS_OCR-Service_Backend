@@ -24,8 +24,6 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-# Model initialization happens at container startup; doing it during image
-# build makes CI depend on Paddle's remote model registry availability.
 RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 
 COPY main.py ocr_worker.py ./

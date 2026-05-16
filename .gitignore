@@ -1,0 +1,8 @@
+.paddlex_cache/
+__pycache__/
+venv/
+*.log
+*.err
+*.jpeg
+*.jpg
+ocr_worker.py
