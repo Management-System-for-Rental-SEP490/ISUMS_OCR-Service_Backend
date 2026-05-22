@@ -53,7 +53,7 @@ if ! aws lambda get-function --function-name "$LAMBDA_NAME" --region "$REGION" >
     --package-type Image \
     --code ImageUri="$IMAGE_URI" \
     --role "$ROLE_ARN" \
-    --architectures arm64 \
+    --architectures x86_64 \
     --memory-size 10240 \
     --timeout 60 \
     --environment "Variables={OCR_SHARED_SECRET=$SECRET,OCR_CPU_THREADS=6,OCR_WORKER_THREADS=3,OCR_VERIFY_WORKERS=2}" \
