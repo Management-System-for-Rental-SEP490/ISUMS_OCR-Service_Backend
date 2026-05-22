@@ -1,12 +1,6 @@
-name: Deploy
+name: Deploy (legacy ECS, disabled)
 
 on:
-  push:
-    branches: [ main ]
-    paths-ignore:
-      - '.github/workflows/**'
-      - 'docs/**'
-      - 'README.md'
   workflow_dispatch:
 
 permissions:

@@ -1,0 +1,83 @@
+name: Deploy OCR Lambda
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'main.py'
+      - 'ocr_worker.py'
+      - 'lambda_handler.py'
+      - 'requirements.lambda.txt'
+      - 'Dockerfile.lambda'
+      - '.github/workflows/deploy-lambda.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-southeast-1
+  ECR_REGISTRY: 886350084162.dkr.ecr.ap-southeast-1.amazonaws.com
+  ECR_REPOSITORY: isums/ocr-service
+  LAMBDA_FUNCTION_NAME: isums-ocr
+
+jobs:
+  deploy:
+    name: Build and deploy OCR Lambda
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push Lambda image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile.lambda
+          platforms: linux/arm64
+          push: true
+          provenance: false
+          sbom: false
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:lambda-latest
+            ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:lambda-${{ github.sha }}
+          cache-from: type=gha,scope=ocr-lambda
+          cache-to: type=gha,mode=max,scope=ocr-lambda
+
+      - name: Update Lambda function code
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! aws lambda get-function \
+                --function-name "${LAMBDA_FUNCTION_NAME}" \
+                --region "${AWS_REGION}" >/dev/null 2>&1; then
+            echo "Lambda function '${LAMBDA_FUNCTION_NAME}' does not exist yet."
+            echo "Image lambda-${GITHUB_SHA} is in ECR. Run scripts/bootstrap-lambda.sh to create the function, then re-run this workflow."
+            exit 0
+          fi
+          aws lambda update-function-code \
+            --function-name "${LAMBDA_FUNCTION_NAME}" \
+            --image-uri "${ECR_REGISTRY}/${ECR_REPOSITORY}:lambda-${GITHUB_SHA}" \
+            --publish \
+            --region "${AWS_REGION}" > /dev/null
+          aws lambda wait function-updated \
+            --function-name "${LAMBDA_FUNCTION_NAME}" \
+            --region "${AWS_REGION}"
+          aws lambda get-function-configuration \
+            --function-name "${LAMBDA_FUNCTION_NAME}" \
+            --region "${AWS_REGION}" \
+            --query '{State:State,LastUpdateStatus:LastUpdateStatus,Version:Version,ImageUri:Code.ImageUri}' \
+            --output table

@@ -1,0 +1,23 @@
+FROM public.ecr.aws/lambda/python:3.12
+
+ENV PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True \
+    FLAGS_use_mkldnn=False \
+    PADDLE_PDX_CACHE_HOME=/tmp/.paddlex_cache \
+    OCR_DEVICE=cpu
+
+RUN dnf install -y mesa-libGL libgomp \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf
+
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+COPY requirements.lambda.txt ./
+
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.lambda.txt
+
+COPY main.py ocr_worker.py lambda_handler.py ./
+
+RUN mkdir -p /tmp/.paddlex_cache
+
+CMD ["lambda_handler.handler"]
