@@ -1,0 +1,8 @@
+paddleocr==3.4.0
+paddlepaddle==3.3.0
+fastapi==0.115.2
+mangum==0.19.0
+pillow==12.1.1
+python-multipart==0.0.22
+numpy==1.26.4
+opencv-python-headless==4.10.0.84

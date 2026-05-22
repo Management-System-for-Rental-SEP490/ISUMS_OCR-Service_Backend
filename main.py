@@ -20,7 +20,8 @@ os.environ["PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK"] = "True"
 # end-to-end. Re-evaluate when bumping paddlepaddle.
 os.environ["FLAGS_use_mkldnn"] = "False"
 
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request
+from fastapi.responses import JSONResponse
 from paddleocr import PaddleOCR
 from PIL import Image, ImageOps
 import asyncio
@@ -41,6 +42,27 @@ logging.basicConfig(
 logger = logging.getLogger("cccd-ocr")
 
 app = FastAPI(title="Vietnam CCCD OCR Service")
+
+_OCR_SHARED_SECRET = os.getenv("OCR_SHARED_SECRET", "").strip()
+_SECRET_BYPASS_PATHS = {"/", "/ping", "/health", "/docs", "/openapi.json", "/redoc"}
+
+
+@app.middleware("http")
+async def _shared_secret_guard(request: Request, call_next):
+    if not _OCR_SHARED_SECRET:
+        return await call_next(request)
+    path = request.url.path or ""
+    if path in _SECRET_BYPASS_PATHS or path.startswith("/docs") or path.startswith("/openapi"):
+        return await call_next(request)
+    header = request.headers.get("x-ocr-secret") or ""
+    if header != _OCR_SHARED_SECRET:
+        return JSONResponse(status_code=401, content={"detail": "invalid or missing x-ocr-secret"})
+    return await call_next(request)
+
+
+@app.get("/ping")
+async def _ping():
+    return {"status": "ok"}
 
 # PaddleOCR config tuned for the workstation (Xeon 28C/56T, 64GB RAM).
 #
